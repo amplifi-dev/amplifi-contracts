@@ -15,13 +15,19 @@ forge test
 ./scripts/node.sh
 
 # In another terminal
-./scripts/deploy.sh local
+./scripts/local.sh
 ```
 
 ## Deploying to network
 
 ```
-forge script DeployScript --fork-url <RPC_URL> --broadcast -i 1
+forge script DeployScript --fork-url <RPC_URL> --broadcast
 
-forge script EnableScript --sig "run(address)" --fork-url <RPC_URL> --broadcast -i 1 <AMPLIFI_ADDRESS>
+# Update .env AMPLIFI variable with the deployed address
+
+forge script EnableScript --fork-url <RPC_URL> --broadcast
+# ProcessFeesScript must be run with --slow
+forge script ProcessFeesScript --fork-url <RPC_URL> --broadcast --slow
 ```
+
+### [Deployed Addresses 🔗](https://docs.perpetualyield.io/engineering/deployed-contract-addresses)

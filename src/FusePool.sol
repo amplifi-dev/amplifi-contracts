@@ -7,6 +7,12 @@ import "./interfaces/IUniswap.sol";
 import "./interfaces/INetwork.sol";
 import "./Types.sol";
 
+/**
+ * Amplifi
+ * Website: https://perpetualyield.io/
+ * Telegram: https://t.me/Amplifi_ERC
+ * Twitter: https://twitter.com/amplifidefi
+ */
 contract FusePool is INetwork, Ownable {
     address immutable token;
     uint256 immutable duration;

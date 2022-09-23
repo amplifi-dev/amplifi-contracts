@@ -5,7 +5,7 @@ if [ -f ".env" ]; then
       cat .env | awk '!/^\s*#/' | awk '!/^\s*$/' | while IFS='' read -r line; do
         key=$(echo "$line" | cut -d '=' -f 1)
         value=$(echo "$line" | cut -d '=' -f 2-)
-        echo "export $key=\"$value\""
+        echo "export $key=$value"
       done
     )"
 else
@@ -17,7 +17,7 @@ fi
 trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
 
 # Wait for anvil to be listening
-exec 3< <(anvil -f $MAIN_RPC_URL --chain-id 1 -m "$SEED" "$@")
+exec 3< <(anvil -f $MAINNET_RPC_URL --chain-id 1337 -m "$SEED" "$@")
 sed '/Listening/q' <&3 ; cat <&3 &
 
 # Wait for exit command CTRL+C

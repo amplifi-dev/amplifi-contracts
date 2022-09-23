@@ -24,7 +24,28 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
     address public partnerships = 0xFf20C9736ac252014800782692d867B4C70656d1;
     address public dead = 0x000000000000000000000000000000000000dEaD;
     uint256 public rate0 = 700000000000;
-    uint256[20] public rates0 = [700000000000, 595000000000, 505750000000, 429887500000, 365404375000, 310593718750, 264004660937, 224403961797, 190743367527, 162131862398, 137812083039, 117140270583, 99569229995, 84633845496, 71938768672, 61147953371, 51975760365, 44179396311, 37552486864, 31919613834];
+    uint256[20] public rates0 = [
+        700000000000,
+        595000000000,
+        505750000000,
+        429887500000,
+        365404375000,
+        310593718750,
+        264004660937,
+        224403961797,
+        190743367527,
+        162131862398,
+        137812083039,
+        117140270583,
+        99569229995,
+        84633845496,
+        71938768672,
+        61147953371,
+        51975760365,
+        44179396311,
+        37552486864,
+        31919613834
+    ];
     uint256 public amount1 = 21759840000000000000;
     uint256 public amount2 = 135999000000000000000;
     uint256 public amount3 = 326397600000000000000;
@@ -52,22 +73,29 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
         uint256 fuseUnlocks;
         bool fuseUnlocked;
     }
-    mapping (uint256 => Validator) public validators;
-    mapping (address => Validator[]) public validatorsByMinter;
-    mapping (address => uint256) public numValidatorsByMinter;
-    mapping (uint256 => uint256) public positions;
+    mapping(uint256 => Validator) public validators;
+    mapping(address => Validator[]) public validatorsByMinter;
+    mapping(address => uint256) public numValidatorsByMinter;
+    mapping(uint256 => uint256) public positions;
     AggregatorV3Interface internal priceFeed = AggregatorV3Interface(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
     uint256 public renewalFee = 1000 * 1000000;
     uint256 public claimMicrovFee = 6900 * 1000000;
     uint256 public claimEthFee = 639 * 1000000;
-    uint256 public mintPrice = 10 * (10 ** 18);
-    uint256 public rewardsFee = 6 * (10 ** 18);
-    uint256 public liquidityFee = 10 ** 18;
-    uint256 public reservesFee = 10 ** 18;
-    uint256 public partnershipsFee = 10 ** 18;
-    uint256 public deadFee = 10 ** 18;
+    uint256 public mintPrice = 10 * (10**18);
+    uint256 public rewardsFee = 6 * (10**18);
+    uint256 public liquidityFee = 10**18;
+    uint256 public reservesFee = 10**18;
+    uint256 public partnershipsFee = 10**18;
+    uint256 public deadFee = 10**18;
 
-    constructor(string memory _name, string memory _symbol, address _microvAddress, address _owner, address _priceFeed, address _weth) ERC721(_name, _symbol, _owner) {
+    constructor(
+        string memory _name,
+        string memory _symbol,
+        address _microvAddress,
+        address _owner,
+        address _priceFeed,
+        address _weth
+    ) ERC721(_name, _symbol, _owner) {
         rewards = address(this);
         microvAddress = _microvAddress;
         microv = IERC20(microvAddress);
@@ -84,7 +112,7 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
         weth = _weth;
     }
 
-    function createToken(uint256 _months) external payable nonReentrant returns (uint) {
+    function createToken(uint256 _months) external payable nonReentrant returns (uint256) {
         require(numValidatorsByMinter[msg.sender] < maxValidatorsPerMinter, "Too many validators");
         require(_months < 193, "Too many months");
         require(msg.value == getRenewalCost(_months), "Invalid value");
@@ -102,7 +130,19 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
         _tokenIds.increment();
         _mint(msg.sender, _newItemId);
         _setTokenURI(_newItemId, string(abi.encodePacked(_newItemId, ".json")));
-        Validator memory _validator = Validator(_newItemId, msg.sender, block.timestamp, 0, 0, 0, block.timestamp + (2628000 * _months), 0, 0, 0, false);
+        Validator memory _validator = Validator(
+            _newItemId,
+            msg.sender,
+            block.timestamp,
+            0,
+            0,
+            0,
+            block.timestamp + (2628000 * _months),
+            0,
+            0,
+            0,
+            false
+        );
         validators[_newItemId] = _validator;
         validatorsByMinter[msg.sender].push(_validator);
         positions[_newItemId] = numValidatorsByMinter[msg.sender];
@@ -122,7 +162,12 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
         Validator[] memory _array = validatorsByMinter[msg.sender];
         for (uint256 _i = 0; _i < _matches; _i++) {
             Validator memory _v = _array[_i];
-            if (_v.fuseProduct == _tier && !_v.fuseUnlocked && _v.renewalExpiry > block.timestamp && _v.fuseUnlocks < block.timestamp) _balance++;
+            if (
+                _v.fuseProduct == _tier &&
+                !_v.fuseUnlocked &&
+                _v.renewalExpiry > block.timestamp &&
+                _v.fuseUnlocks < block.timestamp
+            ) _balance++;
         }
         if (_tier == 1) {
             try _network1.setShare(msg.sender, _balance + 1) {} catch {}
@@ -136,7 +181,19 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
             try _network4.setShare(msg.sender, _balance + 1) {} catch {}
             _seconds = seconds4;
         }
-        Validator memory _validatorNew = Validator(_id, _validator.minter, _validator.created, _validator.lastClaimMicrov, 0, _validator.numClaimsMicrov, _validator.renewalExpiry, _tier, block.timestamp, block.timestamp + _seconds, false);
+        Validator memory _validatorNew = Validator(
+            _id,
+            _validator.minter,
+            _validator.created,
+            _validator.lastClaimMicrov,
+            0,
+            _validator.numClaimsMicrov,
+            _validator.renewalExpiry,
+            _tier,
+            block.timestamp,
+            block.timestamp + _seconds,
+            false
+        );
         validators[_id] = _validatorNew;
         validatorsByMinter[msg.sender][positions[_id]] = _validatorNew;
     }
@@ -153,7 +210,19 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
             require(_validator.renewalExpiry + _boost <= _validator.fuseUnlocks + gracePeriod, "Renewing too far");
         }
         payable(renewals).transfer(msg.value);
-        Validator memory _validatorNew = Validator(_id, _validator.minter, _validator.created, _validator.lastClaimMicrov, _validator.lastClaimEth, _validator.numClaimsMicrov, _validator.renewalExpiry + _boost, _validator.fuseProduct, _validator.fuseCreated, _validator.fuseUnlocks, false);
+        Validator memory _validatorNew = Validator(
+            _id,
+            _validator.minter,
+            _validator.created,
+            _validator.lastClaimMicrov,
+            _validator.lastClaimEth,
+            _validator.numClaimsMicrov,
+            _validator.renewalExpiry + _boost,
+            _validator.fuseProduct,
+            _validator.fuseCreated,
+            _validator.fuseUnlocks,
+            false
+        );
         validators[_id] = _validatorNew;
         validatorsByMinter[msg.sender][positions[_id]] = _validatorNew;
     }
@@ -175,7 +244,19 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
         payable(claims).transfer(msg.value);
         (, uint256 _amount) = getPendingMicrov(_id);
         microv.transfer(msg.sender, _amount);
-        Validator memory _validatorNew = Validator(_id, _validator.minter, _validator.created, block.timestamp, _validator.lastClaimEth, _validator.numClaimsMicrov + 1, _validator.renewalExpiry, _validator.fuseProduct, _validator.fuseCreated, _validator.fuseUnlocks, _validator.fuseUnlocked);
+        Validator memory _validatorNew = Validator(
+            _id,
+            _validator.minter,
+            _validator.created,
+            block.timestamp,
+            _validator.lastClaimEth,
+            _validator.numClaimsMicrov + 1,
+            _validator.renewalExpiry,
+            _validator.fuseProduct,
+            _validator.fuseCreated,
+            _validator.fuseUnlocks,
+            _validator.fuseUnlocked
+        );
         validators[_id] = _validatorNew;
         validatorsByMinter[msg.sender][positions[_id]] = _validatorNew;
     }
@@ -183,7 +264,13 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
     function claimEth(uint256 _id) external payable nonReentrant {
         require(ownerOf(_id) == msg.sender, "Invalid ownership");
         Validator memory _validator = validators[_id];
-        require(_validator.fuseProduct == 1 || _validator.fuseProduct == 2 || _validator.fuseProduct == 3 || _validator.fuseProduct == 4, "Invalid product");
+        require(
+            _validator.fuseProduct == 1 ||
+                _validator.fuseProduct == 2 ||
+                _validator.fuseProduct == 3 ||
+                _validator.fuseProduct == 4,
+            "Invalid product"
+        );
         require(_validator.renewalExpiry > block.timestamp, "Expired");
         require(!_validator.fuseUnlocked, "Already unlocked");
         if (_validator.lastClaimEth == 0) {
@@ -194,12 +281,28 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
         require(msg.value == getClaimEthCost(), "Invalid value");
         payable(claims).transfer(msg.value);
         _refresh(msg.sender, true, _validator.fuseProduct);
-        Validator memory _validatorNew = Validator(_id, _validator.minter, _validator.created, _validator.lastClaimMicrov, block.timestamp, _validator.numClaimsMicrov, _validator.renewalExpiry, _validator.fuseProduct, _validator.fuseCreated, _validator.fuseUnlocks, _validator.fuseUnlocked);
+        Validator memory _validatorNew = Validator(
+            _id,
+            _validator.minter,
+            _validator.created,
+            _validator.lastClaimMicrov,
+            block.timestamp,
+            _validator.numClaimsMicrov,
+            _validator.renewalExpiry,
+            _validator.fuseProduct,
+            _validator.fuseCreated,
+            _validator.fuseUnlocks,
+            _validator.fuseUnlocked
+        );
         validators[_id] = _validatorNew;
         validatorsByMinter[msg.sender][positions[_id]] = _validatorNew;
     }
 
-    function _refresh(address _address, bool _claim, uint8 _tier) private {
+    function _refresh(
+        address _address,
+        bool _claim,
+        uint8 _tier
+    ) private {
         uint256 _1balance = 0;
         uint256 _2balance = 0;
         uint256 _3balance = 0;
@@ -207,7 +310,12 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
         uint256 _matches = numValidatorsByMinter[_address];
         Validator[] memory _array = validatorsByMinter[_address];
         for (uint256 _i = 0; _i < _matches; _i++) {
-            if (_array[_i].fuseProduct > 0 && !_array[_i].fuseUnlocked && _array[_i].renewalExpiry > block.timestamp && _array[_i].fuseUnlocks < block.timestamp) {
+            if (
+                _array[_i].fuseProduct > 0 &&
+                !_array[_i].fuseUnlocked &&
+                _array[_i].renewalExpiry > block.timestamp &&
+                _array[_i].fuseUnlocks < block.timestamp
+            ) {
                 uint256 _fuseProduct = _array[_i].fuseProduct;
                 if (_fuseProduct == 1) _1balance++;
                 else if (_fuseProduct == 2) _2balance++;
@@ -230,7 +338,13 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
     function unlockMicrov(uint256 _id) external nonReentrant {
         require(ownerOf(_id) == msg.sender, "Invalid ownership");
         Validator memory _validator = validators[_id];
-        require(_validator.fuseProduct == 1 || _validator.fuseProduct == 2 || _validator.fuseProduct == 3 || _validator.fuseProduct == 4, "Invalid product");
+        require(
+            _validator.fuseProduct == 1 ||
+                _validator.fuseProduct == 2 ||
+                _validator.fuseProduct == 3 ||
+                _validator.fuseProduct == 4,
+            "Invalid product"
+        );
         require(_validator.renewalExpiry > block.timestamp, "Expired");
         require(_validator.fuseUnlocks >= block.timestamp, "Too early");
         require(!_validator.fuseUnlocked, "Already unlocked");
@@ -239,19 +353,43 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
         else if (_validator.fuseProduct == 2) microv.transfer(msg.sender, amount2);
         else if (_validator.fuseProduct == 3) microv.transfer(msg.sender, amount3);
         else if (_validator.fuseProduct == 4) microv.transfer(msg.sender, amount4);
-        Validator memory _validatorNew = Validator(_id, _validator.minter, _validator.created, _validator.lastClaimMicrov, _validator.lastClaimEth, _validator.numClaimsMicrov, _validator.renewalExpiry, _validator.fuseProduct, _validator.fuseCreated, _validator.fuseUnlocks, true);
+        Validator memory _validatorNew = Validator(
+            _id,
+            _validator.minter,
+            _validator.created,
+            _validator.lastClaimMicrov,
+            _validator.lastClaimEth,
+            _validator.numClaimsMicrov,
+            _validator.renewalExpiry,
+            _validator.fuseProduct,
+            _validator.fuseCreated,
+            _validator.fuseUnlocks,
+            true
+        );
         validators[_id] = _validatorNew;
         validatorsByMinter[msg.sender][positions[_id]] = _validatorNew;
     }
 
     function slash(uint256 _id) external nonReentrant onlyOwner {
         Validator memory _validator = validators[_id];
-        require(_validator.fuseProduct == 1 || _validator.fuseProduct == 2 || _validator.fuseProduct == 3 || _validator.fuseProduct == 4, "Invalid product");
+        require(
+            _validator.fuseProduct == 1 ||
+                _validator.fuseProduct == 2 ||
+                _validator.fuseProduct == 3 ||
+                _validator.fuseProduct == 4,
+            "Invalid product"
+        );
         require(_validator.renewalExpiry + gracePeriod <= block.timestamp, "Not expired");
         _refresh(_validator.minter, false, 0);
     }
 
-    function changeRatesAmounts(uint256 _rate0, uint256 _amount1, uint256 _amount2, uint256 _amount3, uint256 _amount4) external nonReentrant onlyOwner {
+    function changeRatesAmounts(
+        uint256 _rate0,
+        uint256 _amount1,
+        uint256 _amount2,
+        uint256 _amount3,
+        uint256 _amount4
+    ) external nonReentrant onlyOwner {
         rate0 = _rate0;
         amount1 = _amount1;
         amount2 = _amount2;
@@ -259,7 +397,14 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
         amount4 = _amount4;
     }
 
-    function configureMinting(uint256 _mintPrice, uint256 _rewardsFee, uint256 _liquidityFee, uint256 _reservesFee, uint256 _partnershipsFee, uint256 _deadFee) external nonReentrant onlyOwner {
+    function configureMinting(
+        uint256 _mintPrice,
+        uint256 _rewardsFee,
+        uint256 _liquidityFee,
+        uint256 _reservesFee,
+        uint256 _partnershipsFee,
+        uint256 _deadFee
+    ) external nonReentrant onlyOwner {
         require(_mintPrice == _rewardsFee + _liquidityFee + _reservesFee + _partnershipsFee + _deadFee, "");
         mintPrice = _mintPrice;
         rewardsFee = _rewardsFee;
@@ -310,7 +455,16 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
         priceFeed = AggregatorV3Interface(_priceFeed);
     }
 
-    function getNetworks() external view returns (address, address, address, address) {
+    function getNetworks()
+        external
+        view
+        returns (
+            address,
+            address,
+            address,
+            address
+        )
+    {
         return (network1Address, network2Address, network3Address, network4Address);
     }
 
@@ -327,15 +481,15 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
     }
 
     function getClaimMicrovCost() public view returns (uint256) {
-        return (claimMicrovFee * (10 ** 18)) / uint(getLatestPrice());
+        return (claimMicrovFee * (10**18)) / uint256(getLatestPrice());
     }
 
     function getClaimEthCost() public view returns (uint256) {
-        return (claimEthFee * (10 ** 18)) / uint(getLatestPrice());
+        return (claimEthFee * (10**18)) / uint256(getLatestPrice());
     }
 
     function getRenewalCost(uint256 _months) public view returns (uint256) {
-        return (renewalFee * (10 ** 18)) / uint(getLatestPrice()) * _months;
+        return ((renewalFee * (10**18)) / uint256(getLatestPrice())) * _months;
     }
 
     function getLatestPrice() public view returns (int256) {
@@ -352,7 +506,8 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
         uint8 _fuseProduct = _validator.fuseProduct;
         require(_fuseProduct == 0, "Must be fused");
         uint256 _newRate = rates0[_validator.numClaimsMicrov];
-        uint256 _amount = (block.timestamp - (_validator.numClaimsMicrov > 0 ? _validator.lastClaimMicrov : _validator.created)) * (_newRate);
+        uint256 _amount = (block.timestamp -
+            (_validator.numClaimsMicrov > 0 ? _validator.lastClaimMicrov : _validator.created)) * (_newRate);
         if (_validator.created < block.timestamp + gammaPeriod) {
             uint256 _seconds = (block.timestamp + gammaPeriod) - _validator.created;
             uint256 _percent = 100;
@@ -371,7 +526,15 @@ contract MicroValidator is AC, ERC721URIStorage, ReentrancyGuard {
         return (_newRate, _amount);
     }
 
-    function setRecipients(address _renewals, address _claims, address _rewards, address _liquidity, address _reserves, address _partnerships, address _dead) external onlyOwner {
+    function setRecipients(
+        address _renewals,
+        address _claims,
+        address _rewards,
+        address _liquidity,
+        address _reserves,
+        address _partnerships,
+        address _dead
+    ) external onlyOwner {
         renewals = _renewals;
         claims = _claims;
         rewards = _rewards;

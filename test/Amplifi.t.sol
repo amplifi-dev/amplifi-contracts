@@ -3,9 +3,9 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import {BaseTest, Types} from "./BaseTest.t.sol";
+import {BaseTestLocal, Types} from "./base/BaseTestLocal.t.sol";
 
-contract AmplifiTest is BaseTest {
+contract AmplifiTest is BaseTestLocal {
     function setUp() public virtual override {
         super.setUp();
     }
@@ -36,7 +36,7 @@ contract AmplifiTest is BaseTest {
     }
 }
 
-contract AmplifiEnabledTest is BaseTest {
+contract AmplifiEnabledTest is BaseTestLocal {
     function setUp() public virtual override {
         super.setUp();
         super.runEnableScript();

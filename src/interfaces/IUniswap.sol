@@ -2,9 +2,7 @@
 pragma solidity ^0.8.13;
 
 interface IUniswapV2Pair {
-    event Approval(
-        address indexed owner, address indexed spender, uint256 value
-    );
+    event Approval(address indexed owner, address indexed spender, uint256 value);
     event Transfer(address indexed from, address indexed to, uint256 value);
 
     function name() external pure returns (string memory);
@@ -17,18 +15,17 @@ interface IUniswapV2Pair {
 
     function balanceOf(address owner) external view returns (uint256);
 
-    function allowance(address owner, address spender)
-        external
-        view
-        returns (uint256);
+    function allowance(address owner, address spender) external view returns (uint256);
 
     function approve(address spender, uint256 value) external returns (bool);
 
     function transfer(address to, uint256 value) external returns (bool);
 
-    function transferFrom(address from, address to, uint256 value)
-        external
-        returns (bool);
+    function transferFrom(
+        address from,
+        address to,
+        uint256 value
+    ) external returns (bool);
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
 
@@ -44,16 +41,10 @@ interface IUniswapV2Pair {
         uint8 v,
         bytes32 r,
         bytes32 s
-    )
-        external;
+    ) external;
 
     event Mint(address indexed sender, uint256 amount0, uint256 amount1);
-    event Burn(
-        address indexed sender,
-        uint256 amount0,
-        uint256 amount1,
-        address indexed to
-    );
+    event Burn(address indexed sender, uint256 amount0, uint256 amount1, address indexed to);
     event Swap(
         address indexed sender,
         uint256 amount0In,
@@ -75,7 +66,11 @@ interface IUniswapV2Pair {
     function getReserves()
         external
         view
-        returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast);
+        returns (
+            uint112 reserve0,
+            uint112 reserve1,
+            uint32 blockTimestampLast
+        );
 
     function price0CumulativeLast() external view returns (uint256);
 
@@ -85,17 +80,14 @@ interface IUniswapV2Pair {
 
     function mint(address to) external returns (uint256 liquidity);
 
-    function burn(address to)
-        external
-        returns (uint256 amount0, uint256 amount1);
+    function burn(address to) external returns (uint256 amount0, uint256 amount1);
 
     function swap(
         uint256 amount0Out,
         uint256 amount1Out,
         address to,
         bytes calldata data
-    )
-        external;
+    ) external;
 
     function skim(address to) external;
 
@@ -105,26 +97,19 @@ interface IUniswapV2Pair {
 }
 
 interface IUniswapV2Factory {
-    event PairCreated(
-        address indexed token0, address indexed token1, address pair, uint256
-    );
+    event PairCreated(address indexed token0, address indexed token1, address pair, uint256);
 
     function feeTo() external view returns (address);
 
     function feeToSetter() external view returns (address);
 
-    function getPair(address tokenA, address tokenB)
-        external
-        view
-        returns (address pair);
+    function getPair(address tokenA, address tokenB) external view returns (address pair);
 
     function allPairs(uint256) external view returns (address pair);
 
     function allPairsLength() external view returns (uint256);
 
-    function createPair(address tokenA, address tokenB)
-        external
-        returns (address pair);
+    function createPair(address tokenA, address tokenB) external returns (address pair);
 
     function setFeeTo(address) external;
 
@@ -147,7 +132,11 @@ interface IUniswapV2Router01 {
         uint256 deadline
     )
         external
-        returns (uint256 amountA, uint256 amountB, uint256 liquidity);
+        returns (
+            uint256 amountA,
+            uint256 amountB,
+            uint256 liquidity
+        );
 
     function addLiquidityETH(
         address token,
@@ -159,9 +148,12 @@ interface IUniswapV2Router01 {
     )
         external
         payable
-        returns (uint256 amountToken, uint256 amountETH, uint256 liquidity);
+        returns (
+            uint256 amountToken,
+            uint256 amountETH,
+            uint256 liquidity
+        );
 
-    
     function getAmountsOut(uint256 amountIn, address[] calldata path) external view returns (uint256[] memory amounts);
 
     function getAmountsIn(uint256 amountOut, address[] calldata path) external view returns (uint256[] memory amounts);
@@ -175,9 +167,7 @@ interface IUniswapV2Router02 is IUniswapV2Router01 {
         uint256 amountETHMin,
         address to,
         uint256 deadline
-    )
-        external
-        returns (uint256 amountETH);
+    ) external returns (uint256 amountETH);
 
     function swapExactTokensForETHSupportingFeeOnTransferTokens(
         uint256 amountIn,
@@ -185,8 +175,7 @@ interface IUniswapV2Router02 is IUniswapV2Router01 {
         address[] calldata path,
         address to,
         uint256 deadline
-    )
-        external;
+    ) external;
 
     function swapExactTokensForTokensSupportingFeeOnTransferTokens(
         uint256 amountIn,
@@ -194,15 +183,12 @@ interface IUniswapV2Router02 is IUniswapV2Router01 {
         address[] calldata path,
         address to,
         uint256 deadline
-    )
-        external;
+    ) external;
 
     function swapExactETHForTokensSupportingFeeOnTransferTokens(
         uint256 amountOutMin,
         address[] calldata path,
         address to,
         uint256 deadline
-    )
-        external
-        payable;
+    ) external payable;
 }

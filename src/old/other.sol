@@ -1,16 +1,38 @@
 /**
  *Submitted for verification at Etherscan.io on 2022-06-10
-*/
+ */
 
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 interface AggregatorV3Interface {
     function decimals() external view returns (uint8);
+
     function description() external view returns (string memory);
+
     function version() external view returns (uint256);
-    function getRoundData(uint80 _roundId) external view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
-    function latestRoundData() external view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
+
+    function getRoundData(uint80 _roundId)
+        external
+        view
+        returns (
+            uint80 roundId,
+            int256 answer,
+            uint256 startedAt,
+            uint256 updatedAt,
+            uint80 answeredInRound
+        );
+
+    function latestRoundData()
+        external
+        view
+        returns (
+            uint80 roundId,
+            int256 answer,
+            uint256 startedAt,
+            uint256 updatedAt,
+            uint80 answeredInRound
+        );
 }
 
 interface IERC165 {
@@ -20,21 +42,34 @@ interface IERC165 {
 interface IERC721 is IERC165 {
     event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
     event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+
     function balanceOf(address owner) external view returns (uint256 balance);
+
     function ownerOf(uint256 tokenId) external view returns (address owner);
+
     function approve(address to, uint256 tokenId) external;
+
     function setApprovalForAll(address operator, bool _approved) external;
+
     function getApproved(uint256 tokenId) external view returns (address operator);
+
     function isApprovedForAll(address owner, address operator) external view returns (bool);
 }
 
 interface IERC721Receiver {
-    function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data) external returns (bytes4);
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external returns (bytes4);
 }
 
 interface IERC721Metadata is IERC721 {
     function name() external view returns (string memory);
+
     function symbol() external view returns (string memory);
+
     function tokenURI(uint256 tokenId) external view returns (string memory);
 }
 
@@ -54,15 +89,28 @@ library Address {
         return functionCall(target, data, "Address: low-level call failed");
     }
 
-    function functionCall(address target, bytes memory data, string memory errorMessage) internal returns (bytes memory) {
+    function functionCall(
+        address target,
+        bytes memory data,
+        string memory errorMessage
+    ) internal returns (bytes memory) {
         return functionCallWithValue(target, data, 0, errorMessage);
     }
 
-    function functionCallWithValue(address target, bytes memory data, uint256 value) internal returns (bytes memory) {
+    function functionCallWithValue(
+        address target,
+        bytes memory data,
+        uint256 value
+    ) internal returns (bytes memory) {
         return functionCallWithValue(target, data, value, "Address: low-level call with value failed");
     }
 
-    function functionCallWithValue(address target, bytes memory data, uint256 value, string memory errorMessage) internal returns (bytes memory) {
+    function functionCallWithValue(
+        address target,
+        bytes memory data,
+        uint256 value,
+        string memory errorMessage
+    ) internal returns (bytes memory) {
         require(address(this).balance >= value, "Address: insufficient balance for call");
         require(isContract(target), "Address: call to non-contract");
         (bool success, bytes memory returndata) = target.call{value: value}(data);
@@ -73,7 +121,11 @@ library Address {
         return functionStaticCall(target, data, "Address: low-level static call failed");
     }
 
-    function functionStaticCall(address target, bytes memory data, string memory errorMessage) internal view returns (bytes memory) {
+    function functionStaticCall(
+        address target,
+        bytes memory data,
+        string memory errorMessage
+    ) internal view returns (bytes memory) {
         require(isContract(target), "Address: static call to non-contract");
         (bool success, bytes memory returndata) = target.staticcall(data);
         return verifyCallResult(success, returndata, errorMessage);
@@ -83,13 +135,21 @@ library Address {
         return functionDelegateCall(target, data, "Address: low-level delegate call failed");
     }
 
-    function functionDelegateCall(address target, bytes memory data, string memory errorMessage) internal returns (bytes memory) {
+    function functionDelegateCall(
+        address target,
+        bytes memory data,
+        string memory errorMessage
+    ) internal returns (bytes memory) {
         require(isContract(target), "Address: delegate call to non-contract");
         (bool success, bytes memory returndata) = target.delegatecall(data);
         return verifyCallResult(success, returndata, errorMessage);
     }
 
-    function verifyCallResult(bool success, bytes memory returndata, string memory errorMessage) internal pure returns (bytes memory) {
+    function verifyCallResult(
+        bool success,
+        bytes memory returndata,
+        string memory errorMessage
+    ) internal pure returns (bytes memory) {
         if (success) {
             return returndata;
         } else {
@@ -176,20 +236,25 @@ abstract contract ERC165 is IERC165 {
 
 abstract contract AC {
     address internal owner;
+
     constructor(address _owner) {
         owner = _owner;
     }
+
     modifier onlyOwner() {
         require(isOwner(msg.sender), "!OWNER");
         _;
     }
+
     function isOwner(address account) public view returns (bool) {
         return account == owner;
     }
+
     function transferOwnership(address payable adr) public onlyOwner {
         owner = adr;
         emit OwnershipTransferred(adr);
     }
+
     event OwnershipTransferred(address owner);
 }
 
@@ -211,13 +276,20 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, AC {
 
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
-    constructor(string memory name_, string memory symbol_, address _owner) AC(_owner) {
+    constructor(
+        string memory name_,
+        string memory symbol_,
+        address _owner
+    ) AC(_owner) {
         _name = name_;
         _symbol = symbol_;
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
-        return interfaceId == type(IERC721).interfaceId || interfaceId == type(IERC721Metadata).interfaceId || super.supportsInterface(interfaceId);
+        return
+            interfaceId == type(IERC721).interfaceId ||
+            interfaceId == type(IERC721Metadata).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     function balanceOf(address owner) public view virtual override returns (uint256) {
@@ -256,7 +328,10 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, AC {
     function approve(address to, uint256 tokenId) public virtual override {
         address owner = ERC721.ownerOf(tokenId);
         require(to != owner, "ERC721: approval to current owner");
-        require(_msgSender() == owner || isApprovedForAll(owner, _msgSender()), "ERC721: approve caller is not owner nor approved for all");
+        require(
+            _msgSender() == owner || isApprovedForAll(owner, _msgSender()),
+            "ERC721: approve caller is not owner nor approved for all"
+        );
         _approve(to, tokenId);
     }
 
@@ -287,9 +362,16 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, AC {
         _safeMint(to, tokenId, "");
     }
 
-    function _safeMint(address to, uint256 tokenId, bytes memory data) internal virtual {
+    function _safeMint(
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) internal virtual {
         _mint(to, tokenId);
-        require(_checkOnERC721Received(address(0), to, tokenId, data), "ERC721: transfer to non ERC721Receiver implementer");
+        require(
+            _checkOnERC721Received(address(0), to, tokenId, data),
+            "ERC721: transfer to non ERC721Receiver implementer"
+        );
     }
 
     function _mint(address to, uint256 tokenId) internal virtual {
@@ -304,13 +386,22 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, AC {
         emit Approval(ERC721.ownerOf(tokenId), to, tokenId);
     }
 
-    function _setApprovalForAll(address owner, address operator, bool approved) internal virtual {
+    function _setApprovalForAll(
+        address owner,
+        address operator,
+        bool approved
+    ) internal virtual {
         require(owner != operator, "ERC721: approve to caller");
         _operatorApprovals[owner][operator] = approved;
         emit ApprovalForAll(owner, operator, approved);
     }
 
-    function _checkOnERC721Received(address from, address to, uint256 tokenId, bytes memory data) internal returns (bool) {
+    function _checkOnERC721Received(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) internal returns (bool) {
         if (to.isContract()) {
             try IERC721Receiver(to).onERC721Received(_msgSender(), from, tokenId, data) returns (bytes4 retval) {
                 return retval == IERC721Receiver.onERC721Received.selector;
@@ -380,7 +471,6 @@ abstract contract ERC721URIStorage is ERC721 {
     }
 }
 
-
 library SafeMath {
     function tryAdd(uint256 a, uint256 b) internal pure returns (bool, uint256) {
         unchecked {
@@ -389,12 +479,14 @@ library SafeMath {
             return (true, c);
         }
     }
+
     function trySub(uint256 a, uint256 b) internal pure returns (bool, uint256) {
         unchecked {
             if (b > a) return (false, 0);
             return (true, a - b);
         }
     }
+
     function tryMul(uint256 a, uint256 b) internal pure returns (bool, uint256) {
         unchecked {
             if (a == 0) return (true, 0);
@@ -403,46 +495,68 @@ library SafeMath {
             return (true, c);
         }
     }
+
     function tryDiv(uint256 a, uint256 b) internal pure returns (bool, uint256) {
         unchecked {
             if (b == 0) return (false, 0);
             return (true, a / b);
         }
     }
+
     function tryMod(uint256 a, uint256 b) internal pure returns (bool, uint256) {
         unchecked {
             if (b == 0) return (false, 0);
             return (true, a % b);
         }
     }
+
     function add(uint256 a, uint256 b) internal pure returns (uint256) {
         return a + b;
     }
+
     function sub(uint256 a, uint256 b) internal pure returns (uint256) {
         return a - b;
     }
+
     function mul(uint256 a, uint256 b) internal pure returns (uint256) {
         return a * b;
     }
+
     function div(uint256 a, uint256 b) internal pure returns (uint256) {
         return a / b;
     }
+
     function mod(uint256 a, uint256 b) internal pure returns (uint256) {
         return a % b;
     }
-    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+
+    function sub(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
         unchecked {
             require(b <= a, errorMessage);
             return a - b;
         }
     }
-    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+
+    function div(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
         unchecked {
             require(b > 0, errorMessage);
             return a / b;
         }
     }
-    function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+
+    function mod(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
         unchecked {
             require(b > 0, errorMessage);
             return a % b;
@@ -452,34 +566,71 @@ library SafeMath {
 
 interface IERC20 {
     function totalSupply() external view returns (uint256);
+
     function decimals() external view returns (uint8);
+
     function symbol() external view returns (string memory);
+
     function name() external view returns (string memory);
+
     function getOwner() external view returns (address);
+
     function balanceOf(address account) external view returns (uint256);
+
     function transfer(address recipient, uint256 amount) external returns (bool);
+
     function allowance(address _owner, address spender) external view returns (uint256);
+
     function approve(address spender, uint256 amount) external returns (bool);
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) external returns (bool);
+
     event Transfer(address indexed from, address indexed to, uint256 value);
     event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
 interface IUniswapV2Factory {
     function createPair(address tokenA, address tokenB) external returns (address pair);
+
     function getPair(address tokenA, address tokenB) external view returns (address pair);
 }
 
 interface IUniswapV2Router {
     function factory() external pure returns (address);
+
     function WETH() external pure returns (address);
-    function swapExactTokensForTokensSupportingFeeOnTransferTokens(uint256 amountIn, uint256 amountOutMin, address[] calldata path, address to, uint256 deadline) external;
-    function swapExactETHForTokensSupportingFeeOnTransferTokens(uint256 amountOutMin, address[] calldata path, address to, uint256 deadline) external payable;
-    function swapExactTokensForETHSupportingFeeOnTransferTokens(uint256 amountIn, uint256 amountOutMin, address[] calldata path, address to, uint256 deadline) external;
+
+    function swapExactTokensForTokensSupportingFeeOnTransferTokens(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external;
+
+    function swapExactETHForTokensSupportingFeeOnTransferTokens(
+        uint256 amountOutMin,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external payable;
+
+    function swapExactTokensForETHSupportingFeeOnTransferTokens(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external;
 }
 
 interface INetwork {
     function setShare(address shareholder, uint256 amount) external;
+
     function deposit() external payable;
 }
 
@@ -495,24 +646,30 @@ contract Network1 is INetwork, AC {
     IERC20 BASE;
     IUniswapV2Router router;
     address[] shareholders;
-    mapping (address => uint256) shareholderIndexes;
-    mapping (address => uint256) public totalRewardsDistributed;
-    mapping (address => mapping (address => uint256)) public totalRewardsToUser;
-    mapping (address => bool) public allowed;
-    mapping (address => Share) public shares;
+    mapping(address => uint256) shareholderIndexes;
+    mapping(address => uint256) public totalRewardsDistributed;
+    mapping(address => mapping(address => uint256)) public totalRewardsToUser;
+    mapping(address => bool) public allowed;
+    mapping(address => Share) public shares;
     uint256 public totalShares;
     uint256 public totalDividends;
     uint256 public totalDistributed;
     uint256 public dividendsPerShare;
-    uint256 public dividendsPerShareAccuracyFactor = 10 ** 36;
+    uint256 public dividendsPerShareAccuracyFactor = 10**36;
 
     modifier onlyToken() {
         require(msg.sender == _token);
         _;
     }
 
-    constructor (address _router, address _owner, address _weth) AC(_owner) {
-        router = _router != address(0) ? IUniswapV2Router(_router) : IUniswapV2Router(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+    constructor(
+        address _router,
+        address _owner,
+        address _weth
+    ) AC(_owner) {
+        router = _router != address(0)
+            ? IUniswapV2Router(_router)
+            : IUniswapV2Router(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
         _token = msg.sender;
         allowed[_weth] = true;
         BASE = IERC20(_weth);
@@ -560,8 +717,10 @@ contract Network1 is INetwork, AC {
             shares[shareholder].totalExcluded = getCumulativeDividends(shares[shareholder].amount);
             if (rewardAddress == address(BASE)) {
                 payable(shareholder).transfer(amount);
-                totalRewardsDistributed[rewardAddress] = totalRewardsDistributed[rewardAddress].add(amount);  
-                totalRewardsToUser[rewardAddress][shareholder] = totalRewardsToUser[rewardAddress][shareholder].add(amount);
+                totalRewardsDistributed[rewardAddress] = totalRewardsDistributed[rewardAddress].add(amount);
+                totalRewardsToUser[rewardAddress][shareholder] = totalRewardsToUser[rewardAddress][shareholder].add(
+                    amount
+                );
             }
         }
     }
@@ -618,24 +777,30 @@ contract Network2 is INetwork, AC {
     IERC20 BASE;
     IUniswapV2Router router;
     address[] shareholders;
-    mapping (address => uint256) shareholderIndexes;
-    mapping (address => uint256) public totalRewardsDistributed;
-    mapping (address => mapping (address => uint256)) public totalRewardsToUser;
-    mapping (address => bool) public allowed;
-    mapping (address => Share) public shares;
+    mapping(address => uint256) shareholderIndexes;
+    mapping(address => uint256) public totalRewardsDistributed;
+    mapping(address => mapping(address => uint256)) public totalRewardsToUser;
+    mapping(address => bool) public allowed;
+    mapping(address => Share) public shares;
     uint256 public totalShares;
     uint256 public totalDividends;
     uint256 public totalDistributed;
     uint256 public dividendsPerShare;
-    uint256 public dividendsPerShareAccuracyFactor = 10 ** 36;
+    uint256 public dividendsPerShareAccuracyFactor = 10**36;
 
     modifier onlyToken() {
         require(msg.sender == _token);
         _;
     }
 
-    constructor (address _router, address _owner, address _weth) AC(_owner) {
-        router = _router != address(0) ? IUniswapV2Router(_router) : IUniswapV2Router(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+    constructor(
+        address _router,
+        address _owner,
+        address _weth
+    ) AC(_owner) {
+        router = _router != address(0)
+            ? IUniswapV2Router(_router)
+            : IUniswapV2Router(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
         _token = msg.sender;
         allowed[_weth] = true;
         BASE = IERC20(_weth);
@@ -683,8 +848,10 @@ contract Network2 is INetwork, AC {
             shares[shareholder].totalExcluded = getCumulativeDividends(shares[shareholder].amount);
             if (rewardAddress == address(BASE)) {
                 payable(shareholder).transfer(amount);
-                totalRewardsDistributed[rewardAddress] = totalRewardsDistributed[rewardAddress].add(amount);  
-                totalRewardsToUser[rewardAddress][shareholder] = totalRewardsToUser[rewardAddress][shareholder].add(amount);
+                totalRewardsDistributed[rewardAddress] = totalRewardsDistributed[rewardAddress].add(amount);
+                totalRewardsToUser[rewardAddress][shareholder] = totalRewardsToUser[rewardAddress][shareholder].add(
+                    amount
+                );
             }
         }
     }
@@ -741,24 +908,30 @@ contract Network3 is INetwork, AC {
     IERC20 BASE;
     IUniswapV2Router router;
     address[] shareholders;
-    mapping (address => uint256) shareholderIndexes;
-    mapping (address => uint256) public totalRewardsDistributed;
-    mapping (address => mapping (address => uint256)) public totalRewardsToUser;
-    mapping (address => bool) public allowed;
-    mapping (address => Share) public shares;
+    mapping(address => uint256) shareholderIndexes;
+    mapping(address => uint256) public totalRewardsDistributed;
+    mapping(address => mapping(address => uint256)) public totalRewardsToUser;
+    mapping(address => bool) public allowed;
+    mapping(address => Share) public shares;
     uint256 public totalShares;
     uint256 public totalDividends;
     uint256 public totalDistributed;
     uint256 public dividendsPerShare;
-    uint256 public dividendsPerShareAccuracyFactor = 10 ** 36;
+    uint256 public dividendsPerShareAccuracyFactor = 10**36;
 
     modifier onlyToken() {
         require(msg.sender == _token);
         _;
     }
 
-    constructor (address _router, address _owner, address _weth) AC(_owner) {
-        router = _router != address(0) ? IUniswapV2Router(_router) : IUniswapV2Router(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+    constructor(
+        address _router,
+        address _owner,
+        address _weth
+    ) AC(_owner) {
+        router = _router != address(0)
+            ? IUniswapV2Router(_router)
+            : IUniswapV2Router(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
         _token = msg.sender;
         allowed[_weth] = true;
         BASE = IERC20(_weth);
@@ -806,8 +979,10 @@ contract Network3 is INetwork, AC {
             shares[shareholder].totalExcluded = getCumulativeDividends(shares[shareholder].amount);
             if (rewardAddress == address(BASE)) {
                 payable(shareholder).transfer(amount);
-                totalRewardsDistributed[rewardAddress] = totalRewardsDistributed[rewardAddress].add(amount);  
-                totalRewardsToUser[rewardAddress][shareholder] = totalRewardsToUser[rewardAddress][shareholder].add(amount);
+                totalRewardsDistributed[rewardAddress] = totalRewardsDistributed[rewardAddress].add(amount);
+                totalRewardsToUser[rewardAddress][shareholder] = totalRewardsToUser[rewardAddress][shareholder].add(
+                    amount
+                );
             }
         }
     }
@@ -864,24 +1039,30 @@ contract Network4 is INetwork, AC {
     IERC20 BASE;
     IUniswapV2Router router;
     address[] shareholders;
-    mapping (address => uint256) shareholderIndexes;
-    mapping (address => uint256) public totalRewardsDistributed;
-    mapping (address => mapping (address => uint256)) public totalRewardsToUser;
-    mapping (address => bool) public allowed;
-    mapping (address => Share) public shares;
+    mapping(address => uint256) shareholderIndexes;
+    mapping(address => uint256) public totalRewardsDistributed;
+    mapping(address => mapping(address => uint256)) public totalRewardsToUser;
+    mapping(address => bool) public allowed;
+    mapping(address => Share) public shares;
     uint256 public totalShares;
     uint256 public totalDividends;
     uint256 public totalDistributed;
     uint256 public dividendsPerShare;
-    uint256 public dividendsPerShareAccuracyFactor = 10 ** 36;
+    uint256 public dividendsPerShareAccuracyFactor = 10**36;
 
     modifier onlyToken() {
         require(msg.sender == _token);
         _;
     }
 
-    constructor (address _router, address _owner, address _weth) AC(_owner) {
-        router = _router != address(0) ? IUniswapV2Router(_router) : IUniswapV2Router(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+    constructor(
+        address _router,
+        address _owner,
+        address _weth
+    ) AC(_owner) {
+        router = _router != address(0)
+            ? IUniswapV2Router(_router)
+            : IUniswapV2Router(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
         _token = msg.sender;
         allowed[_weth] = true;
         BASE = IERC20(_weth);
@@ -929,8 +1110,10 @@ contract Network4 is INetwork, AC {
             shares[shareholder].totalExcluded = getCumulativeDividends(shares[shareholder].amount);
             if (rewardAddress == address(BASE)) {
                 payable(shareholder).transfer(amount);
-                totalRewardsDistributed[rewardAddress] = totalRewardsDistributed[rewardAddress].add(amount);  
-                totalRewardsToUser[rewardAddress][shareholder] = totalRewardsToUser[rewardAddress][shareholder].add(amount);
+                totalRewardsDistributed[rewardAddress] = totalRewardsDistributed[rewardAddress].add(amount);
+                totalRewardsToUser[rewardAddress][shareholder] = totalRewardsToUser[rewardAddress][shareholder].add(
+                    amount
+                );
             }
         }
     }
@@ -979,9 +1162,11 @@ abstract contract ReentrancyGuard {
     uint256 private constant _NOT_ENTERED = 1;
     uint256 private constant _ENTERED = 2;
     uint256 private _status;
+
     constructor() {
         _status = _NOT_ENTERED;
     }
+
     modifier nonReentrant() {
         require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
         _status = _ENTERED;

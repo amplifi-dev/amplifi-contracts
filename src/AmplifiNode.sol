@@ -9,6 +9,12 @@ import "./interfaces/IUniswap.sol";
 import "./FusePool.sol";
 import "./Types.sol";
 
+/**
+ * Amplifi
+ * Website: https://perpetualyield.io/
+ * Telegram: https://t.me/Amplifi_ERC
+ * Twitter: https://twitter.com/amplifidefi
+ */
 contract AmplifiNode is Ownable, ReentrancyGuard {
     uint16 public maxMonths = 6;
     uint16 public maxAmplifiersPerMinter = 96;

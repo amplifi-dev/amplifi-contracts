@@ -13,15 +13,15 @@ contract MICROV is IERC20, AC {
     string private constant _name = "MicroValidator";
     string private constant _symbol = "MICROV";
     uint8 private constant _decimals = 18;
-    uint256 private _totalSupply = 1000000 * (10 ** _decimals);
+    uint256 private _totalSupply = 1000000 * (10**_decimals);
     uint256 public maxWallet = _totalSupply;
     uint256 public minAmountToTriggerSwap = 0;
-    mapping (address => uint256) private _balances;
-    mapping (address => mapping (address => uint256)) private _allowances;
-    mapping (address => bool) public isDisabledExempt;
-    mapping (address => bool) public isFeeExempt;
-    mapping (address => bool) public isMaxExempt;
-    mapping (address => bool) public isUniswapPair;
+    mapping(address => uint256) private _balances;
+    mapping(address => mapping(address => uint256)) private _allowances;
+    mapping(address => bool) public isDisabledExempt;
+    mapping(address => bool) public isFeeExempt;
+    mapping(address => bool) public isMaxExempt;
+    mapping(address => bool) public isUniswapPair;
     uint256 public buyFeeOp = 300;
     uint256 public buyFeeValidator = 0;
     uint256 public buyFeeTotal = 300;
@@ -56,13 +56,20 @@ contract MICROV is IERC20, AC {
         isContractSelling = false;
     }
 
-    constructor (address _priceFeed) AC(msg.sender) {
+    constructor(address _priceFeed) AC(msg.sender) {
         address _router = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
         router = IUniswapV2Router(_router);
         pair = IUniswapV2Factory(router.factory()).createPair(USDT, address(this));
         _allowances[address(this)][address(router)] = _totalSupply;
         WETH = router.WETH();
-        microvalidator = new MicroValidator("Annuity MicroValidators", "MicroValidator", address(this), msg.sender, _priceFeed, WETH);
+        microvalidator = new MicroValidator(
+            "Annuity MicroValidators",
+            "MicroValidator",
+            address(this),
+            msg.sender,
+            _priceFeed,
+            WETH
+        );
         microvalidatorAddress = address(microvalidator);
         isDisabledExempt[msg.sender] = true;
         isFeeExempt[msg.sender] = true;
@@ -80,7 +87,7 @@ contract MICROV is IERC20, AC {
         isUniswapPair[pair] = true;
         approve(_router, _totalSupply);
         approve(address(pair), _totalSupply);
-        uint256 _toEmissions = 237000 * (10 ** _decimals);
+        uint256 _toEmissions = 237000 * (10**_decimals);
         uint256 _toDeployer = _totalSupply - _toEmissions;
         _balances[msg.sender] = _toDeployer;
         emit Transfer(address(0), msg.sender, _toDeployer);
@@ -118,45 +125,73 @@ contract MICROV is IERC20, AC {
         return _transferFrom(msg.sender, recipient, amount);
     }
 
-    function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
-        if (_allowances[sender][msg.sender] != _totalSupply) _allowances[sender][msg.sender] = _allowances[sender][msg.sender].sub(amount, "Insufficient Allowance");
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) external override returns (bool) {
+        if (_allowances[sender][msg.sender] != _totalSupply)
+            _allowances[sender][msg.sender] = _allowances[sender][msg.sender].sub(amount, "Insufficient Allowance");
         return _transferFrom(sender, recipient, amount);
     }
 
-    function _transferFrom(address _sender, address _recipient, uint256 _amount) private returns (bool) {
+    function _transferFrom(
+        address _sender,
+        address _recipient,
+        uint256 _amount
+    ) private returns (bool) {
         if (isContractSelling) return _simpleTransfer(_sender, _recipient, _amount);
         require(tradingEnabled || isDisabledExempt[_sender], "Trading is currently disabled");
         address _routerAddress = address(router);
         bool _sell = isUniswapPair[_recipient] || _recipient == _routerAddress;
-        if (!_sell && !isMaxExempt[_recipient]) require((_balances[_recipient] + _amount) < maxWallet, "Max wallet has been triggered");
+        if (!_sell && !isMaxExempt[_recipient])
+            require((_balances[_recipient] + _amount) < maxWallet, "Max wallet has been triggered");
         if (_sell && _amount >= minAmountToTriggerSwap) {
-            if (!isUniswapPair[msg.sender] && !isContractSelling && contractSellEnabled && _balances[address(this)] >= contractSellThreshold) _contractSell();
+            if (
+                !isUniswapPair[msg.sender] &&
+                !isContractSelling &&
+                contractSellEnabled &&
+                _balances[address(this)] >= contractSellThreshold
+            ) _contractSell();
         }
         _balances[_sender] = _balances[_sender].sub(_amount, "Insufficient balance");
         uint256 _amountAfterFees = _amount;
-        if (((isUniswapPair[_sender] || _sender == _routerAddress) || (isUniswapPair[_recipient]|| _recipient == _routerAddress)) ? !isFeeExempt[_sender] && !isFeeExempt[_recipient] : false) _amountAfterFees = _collectFee(_sender, _recipient, _amount);
+        if (
+            ((isUniswapPair[_sender] || _sender == _routerAddress) ||
+                (isUniswapPair[_recipient] || _recipient == _routerAddress))
+                ? !isFeeExempt[_sender] && !isFeeExempt[_recipient]
+                : false
+        ) _amountAfterFees = _collectFee(_sender, _recipient, _amount);
         _balances[_recipient] = _balances[_recipient].add(_amountAfterFees);
         emit Transfer(_sender, _recipient, _amountAfterFees);
         return true;
     }
 
-    function _simpleTransfer(address _sender, address _recipient, uint256 _amount) private returns (bool) {
+    function _simpleTransfer(
+        address _sender,
+        address _recipient,
+        uint256 _amount
+    ) private returns (bool) {
         _balances[_sender] = _balances[_sender].sub(_amount, "Insufficient Balance");
         _balances[_recipient] = _balances[_recipient].add(_amount);
         return true;
     }
 
-    function _collectFee(address _sender, address _recipient, uint256 _amount) private returns (uint256) {
+    function _collectFee(
+        address _sender,
+        address _recipient,
+        uint256 _amount
+    ) private returns (uint256) {
         bool _sell = isUniswapPair[_recipient] || _recipient == address(router);
         uint256 _feeDividend = _sell ? sellFeeTotal : buyFeeTotal;
         uint256 _feeDivisor = _amount.mul(_feeDividend).div(bps);
         if (_feeDividend > 0) {
             if (_sell) {
-                if (sellFeeOp > 0) _opTokensToSwap += _feeDivisor * sellFeeOp / _feeDividend;
-                if (sellFeeValidator > 0) _validatorTokensToSwap += _feeDivisor * sellFeeValidator / _feeDividend;
+                if (sellFeeOp > 0) _opTokensToSwap += (_feeDivisor * sellFeeOp) / _feeDividend;
+                if (sellFeeValidator > 0) _validatorTokensToSwap += (_feeDivisor * sellFeeValidator) / _feeDividend;
             } else {
-                if (buyFeeOp > 0) _opTokensToSwap += _feeDivisor * buyFeeOp / _feeDividend;
-                if (buyFeeValidator > 0) _validatorTokensToSwap += _feeDivisor * buyFeeValidator / _feeDividend;
+                if (buyFeeOp > 0) _opTokensToSwap += (_feeDivisor * buyFeeOp) / _feeDividend;
+                if (buyFeeValidator > 0) _validatorTokensToSwap += (_feeDivisor * buyFeeValidator) / _feeDividend;
             }
         }
         _balances[address(this)] = _balances[address(this)].add(_feeDivisor);
@@ -172,7 +207,13 @@ contract MICROV is IERC20, AC {
             path[1] = USDT;
             path[2] = WETH;
             uint256 _ethBefore = address(this).balance;
-            router.swapExactTokensForETHSupportingFeeOnTransferTokens(balanceOf(address(this)), 0, path, address(this), block.timestamp);
+            router.swapExactTokensForETHSupportingFeeOnTransferTokens(
+                balanceOf(address(this)),
+                0,
+                path,
+                address(this),
+                block.timestamp
+            );
             uint256 _ethAfter = address(this).balance.sub(_ethBefore);
             uint256 _ethOp = _ethAfter.mul(_opTokensToSwap).div(_tokensTotal);
             uint256 _ethValidator = _ethAfter.mul(_validatorTokensToSwap).div(_tokensTotal);
@@ -189,7 +230,13 @@ contract MICROV is IERC20, AC {
             path[0] = address(this);
             path[1] = USDT;
             uint256 _usdtBefore = usdt.balanceOf(address(this));
-            router.swapExactTokensForTokensSupportingFeeOnTransferTokens(balanceOf(address(this)), 0, path, address(this), block.timestamp);
+            router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                balanceOf(address(this)),
+                0,
+                path,
+                address(this),
+                block.timestamp
+            );
             uint256 _usdtAfter = usdt.balanceOf(address(this)).sub(_usdtBefore);
             uint256 _usdtOp = _usdtAfter.mul(taxDistOp).div(taxDistBps);
             uint256 _usdtValidator = _usdtAfter.mul(taxDistValidator).div(taxDistBps);
@@ -208,7 +255,11 @@ contract MICROV is IERC20, AC {
         swapForETH = _swapForETH;
     }
 
-    function changeTaxDist(uint256 _taxDistOp, uint256 _taxDistValidator, uint256 _taxDistBps) external onlyOwner {
+    function changeTaxDist(
+        uint256 _taxDistOp,
+        uint256 _taxDistValidator,
+        uint256 _taxDistBps
+    ) external onlyOwner {
         taxDistOp = _taxDistOp;
         taxDistValidator = _taxDistValidator;
         taxDistBps = _taxDistBps;
@@ -268,7 +319,13 @@ contract MICROV is IERC20, AC {
         contractSellThreshold = _contractSellThreshold;
     }
 
-    function setTransferTaxes(uint256 _buyFeeOp, uint256 _buyFeeValidator, uint256 _sellFeeOp, uint256 _sellFeeValidator, uint256 _bps) external onlyOwner {
+    function setTransferTaxes(
+        uint256 _buyFeeOp,
+        uint256 _buyFeeValidator,
+        uint256 _sellFeeOp,
+        uint256 _sellFeeValidator,
+        uint256 _bps
+    ) external onlyOwner {
         buyFeeOp = _buyFeeOp;
         buyFeeValidator = _buyFeeValidator;
         buyFeeTotal = _buyFeeOp.add(_buyFeeValidator);
@@ -278,16 +335,27 @@ contract MICROV is IERC20, AC {
         bps = _bps;
     }
 
-    function setTransferTaxRecipients(address _opFeeRecipient1, address _opFeeRecipient2, address _opFeeRecipient3, address _validatorFeeRecipient) external onlyOwner {
+    function setTransferTaxRecipients(
+        address _opFeeRecipient1,
+        address _opFeeRecipient2,
+        address _opFeeRecipient3,
+        address _validatorFeeRecipient
+    ) external onlyOwner {
         opFeeRecipient1 = _opFeeRecipient1;
         opFeeRecipient2 = _opFeeRecipient2;
         opFeeRecipient3 = _opFeeRecipient3;
         validatorFeeRecipient = _validatorFeeRecipient;
     }
 
-    function updateRouting(address _router, address _pair, address _USDT) external onlyOwner {
+    function updateRouting(
+        address _router,
+        address _pair,
+        address _USDT
+    ) external onlyOwner {
         router = IUniswapV2Router(_router);
-        pair = _pair == address(0) ? IUniswapV2Factory(router.factory()).createPair(address(this), _USDT) : IUniswapV2Factory(router.factory()).getPair(address(this), _USDT);
+        pair = _pair == address(0)
+            ? IUniswapV2Factory(router.factory()).createPair(address(this), _USDT)
+            : IUniswapV2Factory(router.factory()).getPair(address(this), _USDT);
         _allowances[address(this)][_router] = _totalSupply;
     }
 

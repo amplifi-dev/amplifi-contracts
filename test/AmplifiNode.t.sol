@@ -3,9 +3,11 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import {Amplifi, AmplifiNode, BaseTest, Types} from "./BaseTest.t.sol";
+import {Amplifi, AmplifiNode, BaseTestLocal, Types} from "./base/BaseTestLocal.t.sol";
 
-contract AmplifiNodeTest is BaseTest {
+import {UpdateRatesScript} from "../script/UpdateRates.s.sol";
+
+contract AmplifiNodeTest is BaseTestLocal {
     function setUp() public virtual override {
         super.setUp();
         super.runEnableScript();
@@ -666,7 +668,6 @@ contract AmplifiNodeTest is BaseTest {
 
         vm.startPrank(userOne);
 
-
         amplifiNode.claimAMPLIFI(firstAmplifier);
 
         uint256 balanceDifference = amplifi.balanceOf(userOne) - amplifiBalanceBeforeBefore;
@@ -691,6 +692,14 @@ contract AmplifiNodeTest is BaseTest {
         assertGt(usdc.balanceOf(developers), developersUSDCBalanceBefore);
         assertGt(usdc.balanceOf(operations), operationsUSDCBalanceBefore);
         assertGt(amplifi.balanceOf(userOne) - amplifiBalanceBefore, balanceDifference * 9);
+    }
+
+    function testSetRates() public {
+        uint256 initialRate0 = amplifiNode.rates(0);
+
+        new UpdateRatesScript().setUp().run(amplifi);
+
+        assertEq(amplifiNode.rates(0), initialRate0 * 2);
     }
 
     // TODO: Test claimETHBatch

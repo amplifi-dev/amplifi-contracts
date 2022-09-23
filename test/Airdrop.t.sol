@@ -5,24 +5,22 @@ import "forge-std/Test.sol";
 
 import {Amplifi, AmplifiNode} from "../src/Amplifi.sol";
 
-import {BaseTest} from "./BaseTest.t.sol";
+import {BaseTestDeployed} from "./base/BaseTestDeployed.t.sol";
 
 import {AirdropValidatorsScript} from "../script/AirdropValidators.s.sol";
 
-contract AirdropTest is BaseTest {
+contract AirdropDeployedTest is BaseTestDeployed {
     function setUp() public virtual override {
         super.setUp();
-        super.runEnableScript();
     }
 
     function testAirdrop() public {
-        address recipient = 0x874b0729bA1f1767100048dF21B8575Cc0Ae3aC3;
-        assertEq(amplifiNode.balanceOf(recipient), 3);
-
-        AirdropValidatorsScript airdropValidatorsScript = new AirdropValidatorsScript();
-        airdropValidatorsScript.run(amplifi);
-
+        address recipient = 0x4eD58aba9B4d9a43925547AD7Ecc76D100c0Dc1e;
         assertEq(amplifiNode.balanceOf(recipient), 5);
+
+        AirdropValidatorsScript(address(new AirdropValidatorsScript().setUp())).runAs(deployer);
+
+        assertEq(amplifiNode.balanceOf(recipient), 10);
         uint256 id = amplifiNode.ownedAmplifiers(recipient, 0);
 
         (, address minter, , , , , , , ) = amplifiNode.amplifiers(id);
@@ -30,13 +28,12 @@ contract AirdropTest is BaseTest {
     }
 
     function testAirdropAndRemove() public {
-        address recipient = 0x874b0729bA1f1767100048dF21B8575Cc0Ae3aC3;
-        assertEq(amplifiNode.balanceOf(recipient), 3);
-
-        AirdropValidatorsScript airdropValidatorsScript = new AirdropValidatorsScript();
-        airdropValidatorsScript.run(amplifi);
-
+        address recipient = 0x4eD58aba9B4d9a43925547AD7Ecc76D100c0Dc1e;
         assertEq(amplifiNode.balanceOf(recipient), 5);
+
+        AirdropValidatorsScript(address(new AirdropValidatorsScript().setUp())).runAs(deployer);
+
+        assertEq(amplifiNode.balanceOf(recipient), 10);
         uint256 id = amplifiNode.ownedAmplifiers(recipient, 0);
 
         (, address minter, , , , , , , ) = amplifiNode.amplifiers(id);
@@ -47,6 +44,6 @@ contract AirdropTest is BaseTest {
 
         (, minter, , , , , , , ) = amplifiNode.amplifiers(id);
         assertEq(minter, address(0));
-        assertEq(amplifiNode.balanceOf(recipient), 4);
+        assertEq(amplifiNode.balanceOf(recipient), 9);
     }
 }

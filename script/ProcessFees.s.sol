@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "forge-std/Script.sol";
+import {BaseScript} from "./base/BaseScript.s.sol";
 
 import {Amplifi} from "../src/Amplifi.sol";
 import {Types} from "../src/Types.sol";
 
 import {ScriptTypes} from "./ScriptTypes.sol";
 
-contract ProcessFeesScript is Script {
-    function run(Amplifi amplifi) public {
-        vm.startBroadcast(0x4a5c98C184dA163cFffa7F1296c913135565ad3f);
+contract ProcessFeesScript is BaseScript {
+    function run() public {
+        vm.startBroadcast(owner);
 
         uint256 ethAfter = address(amplifi).balance;
 
-        amplifi.withdrawETH(0x4a5c98C184dA163cFffa7F1296c913135565ad3f);
+        amplifi.withdrawETH(owner);
 
         Types.FeeRecipients memory feeRecipients;
         {

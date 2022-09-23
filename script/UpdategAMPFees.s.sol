@@ -3,10 +3,12 @@ pragma solidity ^0.8.13;
 
 import {BaseScript} from "./base/BaseScript.s.sol";
 
-contract EnableScript is BaseScript {
+contract UpdategAMPFeesScript is BaseScript {
     function run() public {
         vm.startBroadcast(owner);
-        amplifi.setTradingEnabled(true);
+
+        gamp.setFees(0.001 ether, 300);
+
         vm.stopBroadcast();
     }
 }

@@ -5,7 +5,7 @@ if [ -f ".env" ]; then
       cat .env | awk '!/^\s*#/' | awk '!/^\s*$/' | while IFS='' read -r line; do
         key=$(echo "$line" | cut -d '=' -f 1)
         value=$(echo "$line" | cut -d '=' -f 2-)
-        echo "export $key=\"$value\""
+        echo "export $key=$value"
       done
     )"
 else
@@ -13,4 +13,4 @@ else
     exit 0
 fi
 
-forge script LocalScript --fork-url http://localhost:8545 --broadcast --private-key $DEPLOYER --slow -g 200 $@
+forge script LocalScript --fork-url http://localhost:8545 --broadcast --slow -g 200 $@
